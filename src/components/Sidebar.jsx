@@ -9,7 +9,6 @@ import Scrollbars from "react-custom-scrollbars-2";
 
 const Sidebar = (props) => {
   const [sidebar, setSidebar] = useState("");
-
   const expandMenu = () => {
     document.body.classList.remove("expand-menu");
   };
@@ -55,9 +54,7 @@ const Sidebar = (props) => {
               </li>
               <li className="submenu">
                 <Link
-                  className={
-                    props?.activeClassName === "chat" ? "active" : ""
-                  }
+                  className={props?.activeClassName === "chat" ? "active" : ""}
                   href="/MonProfil"
                 >
                   <span className="menu-side">
@@ -68,9 +65,7 @@ const Sidebar = (props) => {
               </li>
               <li className="submenu">
                 <Link
-                  className={
-                    props?.activeClassName === "chat" ? "active" : ""
-                  }
+                  className={props?.activeClassName === "chat" ? "active" : ""}
                   href="/ModifierProfil"
                 >
                   <span className="menu-side">
