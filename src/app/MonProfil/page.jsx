@@ -9,17 +9,30 @@ import {
 } from "@fortawesome/free-brands-svg-icons";
 import FeatherIcon from "feather-icons-react";
 import Sidebar from "@components/Sidebar";
-import { getMedecinById } from "../../services/medecinService"; // Import your API service function
-import { Profileuser, cameraicon } from "../../components/imagepath"; // Assuming these are your image imports
+import { getMedecinById } from "../../services/medecinService";
+import { Profileuser, cameraicon } from "../../components/imagepath";
 import "../../assets/css/style.css";
 
-const page = () => {
-  const [medecin, setMedecin] = useState(null); // State variable to hold fetched medecin data
+const Page = () => {
+  const [medecin, setMedecin] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    setSelectedFile(file);
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
 
   useEffect(() => {
     const fetchMedecin = async () => {
       try {
-        const medecinData = await getMedecinById(1); // Replace with dynamic ID or parameter
+        const medecinData = await getMedecinById(46);
         setMedecin(medecinData);
       } catch (error) {
         console.error("Failed to fetch medecin data", error);
@@ -29,9 +42,8 @@ const page = () => {
     fetchMedecin();
   }, []);
 
-  // Check if medecin data is fetched
   if (!medecin) {
-    return <div>Loading...</div>; // Add a loading state or component if medecin data is not yet fetched
+    return <div>Loading...</div>;
   }
 
   return (
@@ -84,19 +96,27 @@ const page = () => {
                         <div className="row">
                           <div className="profile-user-box">
                             <div className="profile-user-img">
-                              <img src={Profileuser.src} alt="Profile" />
+                              <img
+                                src={previewUrl || Profileuser.src}
+                                alt="Profile"
+                              />
                               <div className="form-group doctor-up-files profile-edit-icon mb-0">
                                 <div className="uplod d-flex">
                                   <label className="file-upload profile-upbtn mb-0">
                                     <img src={cameraicon.src} alt="Profile" />
-                                    <input type="file" />
+                                    <input
+                                      type="file"
+                                      onChange={handleFileChange}
+                                    />
                                   </label>
                                 </div>
                               </div>
                             </div>
                             <div className="names-profiles">
-                              <h4>{medecin.name}</h4>
-                              <h5>{medecin.designation}</h5>
+                              <h4>
+                                {medecin.nom} {medecin.prenom}
+                              </h4>
+                              <h5>{medecin.specialite}</h5>
                             </div>
                             <div
                               style={{
@@ -212,7 +232,7 @@ const page = () => {
                           <div className="col-xl-3 col-md-6 ">
                             <div className="detail-personal">
                               <h2>Sexe</h2>
-                              <span>{medecin.sexe}</span>
+                              <h3>{medecin.sexe}</h3>
                             </div>
                           </div>
                           <div className="col-xl-3 col-md-6">
@@ -227,20 +247,33 @@ const page = () => {
                               <h3>{medecin.estGeneraliste ? "Oui" : "Non"}</h3>
                             </div>
                           </div>
-
                           <div className="col-xl-3 col-md-6 mt-3">
                             <div className="detail-personal">
                               <h2>Médecin ESJ ?</h2>
                               <h3>{medecin.estMedcinESJ ? "Oui" : "Non"}</h3>
                             </div>
                           </div>
+                          <div className="col-xl-3 col-md-6 mt-3">
+                            <div className="detail-personal">
+                              <h2>CIN</h2>
+                              <h3>{medecin.cin}</h3>
+                            </div>
+                          </div>
+                          <div className="col-xl-3 col-md-6 mt-3">
+                            <div className="detail-personal">
+                              <h2>PPR</h2>
+                              <h3>{medecin.ppr}</h3>
+                            </div>
+                          </div>
+                          <div className="col-xl-3 col-md-6 mt-3">
+                            <div className="detail-personal">
+                              <h2>INPE</h2>
+                              <h3>{medecin.inpe}</h3>
+                            </div>
+                          </div>
                         </div>
                       </div>
                       <div className="hello-park">
-                        <p>{medecin.education}</p>
-                        <p>{medecin.experience}</p>
-                      </div>
-                      <div className="hello-park mb-2">
                         <h5>Éducation</h5>
                         <div className="table-responsive">
                           <table className="table mb-0 border-0 custom-table profile-table">
@@ -249,23 +282,18 @@ const page = () => {
                                 <th>Année</th>
                                 <th>Diplôme</th>
                                 <th>Institut</th>
-                                <th>Résultat</th>
                               </tr>
                             </thead>
-                            {/*    <tbody>
-                              {medecin.educationDetails.map((edu, index) => (
-                                <tr key={index}>
-                                  <td>{edu.year}</td>
-                                  <td>{edu.degree}</td>
-                                  <td>{edu.institute}</td>
-                                  <td>
-                                    <button className="custom-badge status-green">
-                                      {edu.result}
-                                    </button>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>*/}
+                            <tbody>
+                              {medecin.education &&
+                                medecin.education.map((edu, index) => (
+                                  <tr key={index}>
+                                    <td>{edu.year}</td>
+                                    <td>{edu.diploma}</td>
+                                    <td>{edu.institut}</td>
+                                  </tr>
+                                ))}
+                            </tbody>
                           </table>
                         </div>
                       </div>
@@ -278,23 +306,18 @@ const page = () => {
                                 <th>Année</th>
                                 <th>Poste</th>
                                 <th>Hôpital</th>
-                                <th>Feedback</th>
                               </tr>
                             </thead>
-                            {/*    <tbody>
-                              {medecin.experienceDetails.map((exp, index) => (
-                                <tr key={index}>
-                                  <td>{exp.year}</td>
-                                  <td>{exp.position}</td>
-                                  <td>{exp.hospital}</td>
-                                  <td>
-                                    <button className="custom-badge status-orange">
-                                      {exp.feedback}
-                                    </button>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>*/}
+                            <tbody>
+                              {medecin.experience &&
+                                medecin.experience.map((exp, index) => (
+                                  <tr key={index}>
+                                    <td>{exp.year}</td>
+                                    <td>{exp.position}</td>
+                                    <td>{exp.hospital}</td>
+                                  </tr>
+                                ))}
+                            </tbody>
                           </table>
                         </div>
                       </div>
@@ -310,4 +333,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

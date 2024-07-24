@@ -17,7 +17,12 @@ const MonProfile = () => {
     prenom: "",
     nom: "",
     specialite: "",
+    sexe: "",
+    about: "",
+
     mail: "",
+    password: "",
+    confirmPassword: "",
     estGeneraliste: false,
     estMedcinESJ: false,
     cin: "",
@@ -25,12 +30,13 @@ const MonProfile = () => {
     ppr: "",
   });
   const [loading, setLoading] = useState(true);
-
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
   useEffect(() => {
     const fetchMedecin = async () => {
       try {
         setLoading(true);
-        const id = 1; // Get the ID dynamically
+        const id = 46; // Get the ID dynamically
         const medecinData = await getMedecinById(id);
         setMedecin(medecinData);
         setFormData({
@@ -41,6 +47,9 @@ const MonProfile = () => {
           ppr: medecinData.ppr,
           specialite: medecinData.specialite,
           mail: medecinData.mail,
+          sexe: medecinData.sexe,
+          about: medecinData.about,
+          password: medecinData.password,
           estGeneraliste: medecinData.estGeneraliste,
           estMedcinESJ: medecinData.estMedcinESJ,
         });
@@ -62,7 +71,16 @@ const MonProfile = () => {
       [name]: value,
     }));
   };
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    setSelectedFile(file);
 
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
   const handleCheckboxChange = (e) => {
     const { name, checked } = e.target;
     setFormData((prevState) => ({
@@ -72,9 +90,13 @@ const MonProfile = () => {
   };
 
   const validateForm = () => {
-    const { prenom, nom, mail } = formData;
+    const { prenom, nom, mail, password, confirmPassword } = formData;
     if (!prenom || !nom || !mail) {
       toast.error("Prénom, Nom, and Email are required.");
+      return false;
+    }
+    if (password && password !== confirmPassword) {
+      toast.error("Les mots de passe ne correspondent pas.");
       return false;
     }
     return true;
@@ -85,14 +107,18 @@ const MonProfile = () => {
     if (!validateForm()) return;
 
     try {
-      const id = 1; // Get the ID dynamically
-      await updateMedecin(id, formData);
-      console.log("Success toast should appear"); // Debugging statement
+      const id = 46; // Get the ID dynamically
+      const updateData = { ...formData };
+      // Always remove confirmPassword from the updateData
+      delete updateData.confirmPassword;
+      if (!formData.password) {
+        delete updateData.password;
+      }
+      await updateMedecin(id, updateData);
       toast.success("Profile updated successfully!");
       setLoading(true);
     } catch (error) {
       console.error("Failed to update medecin data", error);
-      console.log("Error toast should appear"); // Debugging statement
       toast.error("Failed to update profile.");
     } finally {
       setLoading(false);
@@ -151,12 +177,18 @@ const MonProfile = () => {
                         <div className="row">
                           <div className="profile-user-box">
                             <div className="profile-user-img">
-                              <img src={Profileuser.src} alt="Profile" />
+                              <img
+                                src={previewUrl || Profileuser.src}
+                                alt="Profile"
+                              />{" "}
                               <div className="form-group doctor-up-files profile-edit-icon mb-0">
                                 <div className="uplod d-flex">
                                   <label className="file-upload profile-upbtn mb-0">
                                     <img src={cameraicon.src} alt="Profile" />
-                                    <input type="file" />
+                                    <input
+                                      type="file"
+                                      onChange={handleFileChange}
+                                    />
                                   </label>
                                 </div>
                               </div>
@@ -249,7 +281,7 @@ const MonProfile = () => {
                       </div>
                       <form onSubmit={handleSubmit}>
                         <div className="row">
-                          <div className="col-12">
+                          <div className="col-12 mt-4">
                             <div className="form-group">
                               <label>À propos de moi</label>
                               <textarea
@@ -265,6 +297,7 @@ const MonProfile = () => {
                             <div className="form-group">
                               <label>Prénom</label>
                               <input
+                                disabled
                                 type="text"
                                 className="form-control"
                                 name="prenom"
@@ -277,6 +310,7 @@ const MonProfile = () => {
                             <div className="form-group">
                               <label>Nom</label>
                               <input
+                                disabled
                                 type="text"
                                 className="form-control"
                                 name="nom"
@@ -361,22 +395,87 @@ const MonProfile = () => {
                           </div>
                           <div className="col-12">
                             <div className="form-group">
-                              <label>Est Généraliste</label>
+                              <label>Mot de passe</label>
+                              <input
+                                type="password"
+                                className="form-control"
+                                name="password"
+                                placeholder="********"
+                                value={formData.password || ""}
+                                onChange={handleInputChange}
+                              />
+                            </div>
+                          </div>
+                          <div className="col-12">
+                            <div className="form-group">
+                              <label>Confirmer le mot de passe</label>
+                              <input
+                                type="password"
+                                className="form-control"
+                                placeholder="********"
+                                name="confirmPassword"
+                                value={formData.confirmPassword || ""}
+                                onChange={handleInputChange}
+                              />
+                            </div>
+                          </div>
+                          <div className="col-12">
+                            <div className="form-group">
+                              <label>Linkedin</label>
+                              <input
+                                type="text"
+                                className="form-control"
+                                name="inpe"
+                                value={formData.linkedin || ""}
+                                onChange={handleInputChange}
+                              />
+                            </div>
+                          </div>
+                          <div className="col-12">
+                            <div className="form-group">
+                              <label>Twitter</label>
+                              <input
+                                type="text"
+                                className="form-control"
+                                name="inpe"
+                                value={formData.twitter || ""}
+                                onChange={handleInputChange}
+                              />
+                            </div>
+                          </div>
+                          <div className="col-12">
+                            <div className="form-group form-check">
                               <input
                                 type="checkbox"
+                                className="form-check-input"
+                                id="estGeneraliste"
                                 name="estGeneraliste"
                                 checked={formData.estGeneraliste}
                                 onChange={handleCheckboxChange}
                               />
+                              <label
+                                className="form-check-label"
+                                htmlFor="estGeneraliste"
+                              >
+                                Généraliste
+                              </label>
                             </div>
-                            <div className="form-group">
-                              <label>Est Médecin ESJ</label>
+
+                            <div className="form-group form-check">
                               <input
                                 type="checkbox"
+                                className="form-check-input"
+                                id="estMedcinESJ"
                                 name="estMedcinESJ"
                                 checked={formData.estMedcinESJ}
                                 onChange={handleCheckboxChange}
                               />
+                              <label
+                                className="form-check-label"
+                                htmlFor="estMedcinESJ"
+                              >
+                                Médecin ESJ
+                              </label>
                             </div>
                           </div>
                         </div>

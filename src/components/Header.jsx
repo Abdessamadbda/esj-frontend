@@ -3,7 +3,9 @@ import "@assets/css/style.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "bootstrap/dist/js/bootstrap.bundle.js";
 import Link from "next/link";
-import { useEffect } from "react";
+import { getMedecinById } from "../services/medecinService";
+
+import { useEffect, useState } from "react";
 import {
   logo,
   baricon,
@@ -177,9 +179,32 @@ const Header = () => {
       href: "/",
     },
   ];
+  const [loading, setLoading] = useState(true);
+
+  const [formData, setFormData] = useState({
+    prenom: "",
+    nom: "",
+  });
+  const [medecin, setMedecin] = useState(null);
+
   useEffect(() => {
-    require("bootstrap/dist/js/bootstrap.bundle.min.js");
+    const fetchMedecin = async () => {
+      try {
+        const medecinData = await getMedecinById(46);
+        setMedecin(medecinData);
+      } catch (error) {
+        console.error("Failed to fetch medecin data", error);
+      }
+    };
+
+    fetchMedecin();
   }, []);
+  if (!medecin) {
+    return <div>Loading...</div>;
+  }
+  /* useEffect(() => {
+    require("bootstrap/dist/js/bootstrap.bundle.min.js");
+  }, []);*/
 
   const handlesidebar = () => {
     document.body.classList.toggle("mini-sidebar");
@@ -202,7 +227,7 @@ const Header = () => {
     }
   };
 
-  useEffect(() => {
+  /*useEffect(() => {
     const handleClick = () => {
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen();
@@ -220,13 +245,14 @@ const Header = () => {
       // maximizeBtn.removeEventListener('click', handleClick);
     };
   }, []);
+  */
   return (
     <div className="main-wrapper">
       <div className="header">
         <div className="header-left">
           <Link href="/" className="logo">
-            <Image src={logo} width={35} height={35} alt="" />{" "}
-            <span>EMPS</span>
+            <Image src="/logo.png" width={140} height={35} alt="" />{" "}
+            {/*<span>EMPS</span>*/}
           </Link>
         </div>
         <Link href="#" id="toggle_btn" onClick={handlesidebar}>
@@ -318,7 +344,9 @@ const Header = () => {
               data-bs-toggle="dropdown"
             >
               <div className="user-names">
-                <h5>Khalid Amine</h5>
+                <h5>
+                  {medecin.nom} {medecin.prenom}
+                </h5>
               </div>
               {/* <span className="user-img">
                 <Image src={user06} alt="Admin"/>
